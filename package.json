@@ -1,0 +1,9 @@
+{
+  "name": "manicura-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=20"},
+  "scripts": {"start": "node src/server.js", "dev": "node --watch src/server.js", "db:init": "node scripts/init-db.js", "reminders": "node scripts/reminders.js"},
+  "dependencies": {"dotenv": "^16.4.7", "express": "^4.21.2", "helmet": "^8.0.0", "pg": "^8.13.3"}
+}

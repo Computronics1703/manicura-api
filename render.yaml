@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: manicura-api
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: manicura-db
+          property: connectionString
+      - key: ADMIN_API_KEY
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+  - type: cron
+    name: manicura-recordatorios
+    runtime: node
+    plan: starter
+    schedule: "*/15 * * * *"
+    buildCommand: npm install
+    startCommand: npm run reminders
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: manicura-db
+          property: connectionString
+      - key: WA_ACCESS_TOKEN
+        sync: false
+      - key: WA_PHONE_NUMBER_ID
+        sync: false
+      - key: WA_TEMPLATE_NAME
+        value: recordatorio_cita
+      - key: WA_TEMPLATE_LANG
+        value: es
+      - key: WA_API_VERSION
+        value: v23.0
+databases:
+  - name: manicura-db
+    databaseName: manicura
+    user: manicura
+    plan: basic-256mb
