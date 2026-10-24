@@ -10,6 +10,7 @@ const app=express();
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(express.json({limit:'30kb'}));
+app.use(express.static('public'));
 const origin=process.env.CORS_ORIGIN;
 app.use((req,res,next)=>{
  if(origin && origin !== '*' && req.headers.origin===origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','Content-Type,X-API-Key');res.setHeader('Access-Control-Allow-Methods','GET,POST,PATCH,DELETE,OPTIONS');}
