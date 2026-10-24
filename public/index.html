@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Manicura · Panel</title>
+<link rel="manifest" href="/manifest.webmanifest">
 <style>
 :root{
   --bg:#f8f5f8;
@@ -143,15 +144,15 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;ove
 
   <section id="login" class="panel">
     <h2 class="authTitle">Acceso del personal</h2>
-    <p class="authSubtitle">Ingresa tu <strong>ADMIN_API_KEY</strong> para cargar clientes, citas y estadísticas del panel.</p>
+    <p class="authSubtitle">Ingresa con tu usuario y contraseña para administrar clientes y citas.</p>
     <form id="authForm">
       <div>
-        <label for="key">Clave administrativa</label>
-        <input id="key" class="field" type="password" required autocomplete="off" placeholder="Pega aquí tu ADMIN_API_KEY">
+        <label for="username">Usuario</label><input id="username" class="field" required autocomplete="username" placeholder="Usuario del personal">
+      </div><div><label for="password">Contraseña</label><input id="password" class="field" type="password" required autocomplete="current-password" placeholder="Contraseña">
       </div>
       <button class="btn btn-primary">Entrar al panel</button>
     </form>
-    <p class="helper">No compartas esta clave con clientes ni la publiques en la app final.</p>
+    <p class="helper">Las contraseñas se verifican en el servidor; no quedan guardadas en el navegador.</p>
   </section>
 
   <div id="workspace" hidden>
@@ -285,6 +286,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;ove
   <div class="footer">Panel administrativo de manicura · Conectado a tu servidor HTTPS en Render</div>
 </div>
 <script src="/app.js" defer></script>
+<script src="/pwa.js" defer></script>
 <script src="/pwa.js" defer></script>
 </body>
 </html>

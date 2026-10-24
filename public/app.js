@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-let apiKey='', clients=[], appointments=[];
+let clients=[], appointments=[];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const notice=(message,type='ok')=>{
@@ -16,7 +16,7 @@ const crDate=()=>{
 const plusDay=date=>new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
 const formatTime=iso=>new Intl.DateTimeFormat('es-CR',{timeZone:'America/Costa_Rica',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(iso));
 const req=async(path,options={})=>{
-  const res=await fetch(path,{...options,headers:{'X-API-Key':apiKey,...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
+  const res=await fetch(path,{...options,credentials:'same-origin',headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
   const body=await res.json().catch(()=>({}));
   if(!res.ok) throw Error(body.error||('Error HTTP '+res.status));
   return body;
@@ -55,25 +55,25 @@ function show(tab){
 $('authForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const btn=$('authForm').querySelector('button');
-  apiKey=$('key').value.trim();
+  
   btn.disabled=true; btn.textContent='Ingresando...';
   notice('Comprobando acceso…','info');
   try{
+    await req('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('username').value.trim(),password:$('password').value})});
     await reload();
     $('login').hidden=true;
     $('workspace').hidden=false;
     $('logout').classList.remove('hidden');
-    $('key').value='';
+    $('password').value='';
     notice('Acceso autorizado. El panel ya está listo.','ok');
   }catch(err){
-    apiKey='';
     notice('No se pudo ingresar: '+err.message,'err');
   }finally{
     btn.disabled=false; btn.textContent='Entrar al panel';
   }
 });
-$('logout').onclick=()=>{
-  apiKey=''; clients=[]; appointments=[];
+$('logout').onclick=async()=>{
+  await req('/api/auth/logout',{method:'POST'}).catch(()=>{}); clients=[]; appointments=[];
   $('login').hidden=false; $('workspace').hidden=true; $('logout').classList.add('hidden');
   notice('Sesión cerrada.','info');
 };
