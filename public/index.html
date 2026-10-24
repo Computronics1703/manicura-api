@@ -1,24 +1,285 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#422b43">
-<title>Manicura · Agenda</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7c4d79">
+<title>Manicura · Panel</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#322c34;background:#faf7f9}*{box-sizing:border-box}body{margin:0}header{background:#402d45;color:white;padding:20px max(18px,calc((100vw - 1000px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}header h1{font-size:1.25rem;margin:0}header small{opacity:.8}main{max-width:1000px;margin:auto;padding:20px 16px 40px}.tabs{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}.tab{border:1px solid #ded3dd;background:white;color:#453647}.tab.active{background:#62436a;color:white}button{cursor:pointer;border:0;border-radius:9px;padding:10px 14px;font:inherit;background:#62436a;color:white}button:disabled{opacity:.5;cursor:not-allowed}input,select,textarea{width:100%;padding:11px;border:1px solid #d9ced7;border-radius:8px;font:inherit;background:white;color:#302633}label{display:block;font-size:.9rem;margin-bottom:6px}form{display:grid;gap:14px}.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.panel{background:#fff;border:1px solid #e9e0e7;border-radius:16px;padding:20px;margin:12px 0;box-shadow:0 3px 12px #29192909}h2{font-size:1.13rem;margin:0 0 16px}h3{font-size:1rem}section[hidden]{display:none}#notice{margin:12px 0;min-height:20px}.err{color:#a22e36}.ok{color:#24643c}.muted{color:#726b73}.appointment{border-top:1px solid #eee4ec;padding:12px 0;display:flex;justify-content:space-between;align-items:center;gap:12px}.appointment:first-child{border-top:0}.pill{font-size:.8rem;background:#eee5ef;padding:5px 9px;border-radius:24px}.actions{display:flex;gap:6px;flex-wrap:wrap}.ghost{background:#f0eaf0;color:#49364e}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.summary{display:flex;gap:10px;flex-wrap:wrap}.summary>div{flex:1;min-width:130px;border:1px solid #e9e0e7;background:white;padding:13px;border-radius:12px}.summary strong{font-size:1.4rem;display:block}#login{max-width:520px;margin:60px auto}#workspace[hidden],#login[hidden]{display:none}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid #eee5ec}th{font-size:.85rem;color:#6a606a}.scroll{overflow-x:auto}.check{display:flex;gap:9px;align-items:center}.check input{width:auto}footer{padding:12px;color:#736775;font-size:.82rem;text-align:center}@media(max-width:600px){.cols{grid-template-columns:1fr}.appointment{align-items:flex-start;flex-direction:column}.panel{padding:16px}header{padding:17px}}
+:root{
+  --bg:#f8f5f8;
+  --bg-soft:#f3edf4;
+  --surface:#ffffff;
+  --surface-2:#fcfafe;
+  --text:#2f2431;
+  --muted:#7a6d7c;
+  --primary:#7b4d78;
+  --primary-strong:#643760;
+  --primary-soft:#efe3ee;
+  --success:#1f7a4f;
+  --danger:#b23d4f;
+  --warning:#9c6a1d;
+  --border:#e8dde8;
+  --shadow:0 14px 40px rgba(68,30,68,.08);
+  --radius:22px;
+  --radius-sm:14px;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(180deg,#fbf8fb 0%,#f5f0f6 100%);color:var(--text)}
+body{min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+a{color:inherit}
+.shell{max-width:1180px;margin:0 auto;padding:20px 16px 46px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:8px 0 18px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,var(--primary) 0%,#d89ac8 100%);display:grid;place-items:center;color:#fff;font-size:1.4rem;box-shadow:var(--shadow)}
+.brand h1{margin:0;font-size:1.32rem;line-height:1.1}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.logout{background:#fff;border:1px solid var(--border);color:var(--primary-strong);padding:12px 16px;border-radius:999px;font-weight:600;box-shadow:0 6px 18px rgba(80,44,76,.06)}
+.hero,.panel{background:rgba(255,255,255,.88);backdrop-filter: blur(10px);border:1px solid rgba(232,221,232,.95);box-shadow:var(--shadow)}
+.hero{border-radius:30px;padding:24px;display:grid;grid-template-columns:1.25fr .75fr;gap:18px;align-items:stretch;margin-bottom:18px}
+.heroCard{background:linear-gradient(135deg,rgba(123,77,120,1),rgba(216,154,200,.95));color:#fff;border-radius:24px;padding:26px;position:relative;overflow:hidden;min-height:180px}
+.heroCard:before,.heroCard:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.1)}
+.heroCard:before{width:180px;height:180px;right:-50px;top:-40px}
+.heroCard:after{width:120px;height:120px;right:90px;bottom:-50px}
+.heroCard h2{margin:0 0 10px;font-size:1.55rem;position:relative;z-index:1}
+.heroCard p{margin:0;max-width:55ch;line-height:1.55;opacity:.95;position:relative;z-index:1}
+.heroInfo{display:grid;gap:14px}
+.miniInfo{background:var(--surface);border-radius:22px;padding:18px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:14px}
+.miniInfo strong{display:block;font-size:1.1rem}
+.miniInfo span{display:block;color:var(--muted);font-size:.9rem;margin-top:4px}
+.miniBadge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:14px;background:var(--primary-soft);color:var(--primary-strong);font-weight:700}
+#notice{min-height:22px;margin:0 0 16px}.alert{padding:14px 16px;border-radius:16px;border:1px solid transparent;font-weight:600}.alert.ok{background:#eef8f2;border-color:#cfead9;color:var(--success)}.alert.err{background:#fff2f3;border-color:#f0c8ce;color:var(--danger)}.alert.info{background:#f4f0fa;border-color:#ddd0f1;color:var(--primary-strong)}
+.panel{border-radius:var(--radius);padding:24px}
+#login{max-width:560px;margin:36px auto 0}
+#workspace[hidden],#login[hidden]{display:none}
+.authTitle{margin:0 0 10px;font-size:1.45rem}
+.authSubtitle{margin:0 0 20px;color:var(--muted);line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px 18px 16px;box-shadow:0 8px 24px rgba(71,38,69,.05)}
+.statHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.statLabel{color:var(--muted);font-size:.95rem}
+.stat strong{display:block;font-size:2rem;line-height:1;font-weight:800}
+.stat small{color:var(--muted)}
+.iconBox{width:42px;height:42px;border-radius:14px;background:var(--primary-soft);display:grid;place-items:center;color:var(--primary-strong)}
+.tabs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
+.tab{padding:12px 18px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--primary-strong);font-weight:700;box-shadow:0 4px 12px rgba(76,43,74,.05)}
+.tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.section{grid-column:1/-1}
+.section[hidden]{display:none}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sectionTitle h2{margin:0;font-size:1.28rem}
+.sectionTitle p{margin:6px 0 0;color:var(--muted)}
+.sectionActions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:12px 16px;border-radius:14px;font-weight:700}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-strong)}
+.btn-soft{background:var(--primary-soft);color:var(--primary-strong)}
+.btn-soft:hover{background:#e8d7e5}
+.btn-danger{background:#fff2f3;color:var(--danger);border:1px solid #efcbd2}
+label{display:block;font-size:.93rem;font-weight:700;margin-bottom:8px}
+.field,.select,textarea{width:100%;border:1px solid var(--border);background:#fff;border-radius:14px;padding:13px 14px;color:var(--text);outline:none;transition:.2s border-color,.2s box-shadow}
+.field:focus,.select:focus,textarea:focus{border-color:#bb94b8;box-shadow:0 0 0 4px rgba(123,77,120,.12)}
+form{display:grid;gap:16px}.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cols-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:linear-gradient(180deg,#fff 0%,#fcfbfd 100%);border:1px solid var(--border);border-radius:20px;padding:18px}
+.empty{padding:24px;border:1px dashed #d7cad7;border-radius:18px;background:#fcf8fc;color:var(--muted);text-align:center}
+.agendaWrap{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+.dateCard .field{font-weight:700}
+.dateHint{margin-top:12px;color:var(--muted);font-size:.92rem;line-height:1.55}
+.appointments{display:grid;gap:12px}
+.appointment{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px 16px 14px;display:grid;gap:10px;box-shadow:0 6px 18px rgba(72,42,71,.04)}
+.appointmentTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.appointment strong{font-size:1.06rem}
+.muted{color:var(--muted)}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:.84rem;font-weight:700;background:#f2ebf2;color:var(--primary-strong);border:1px solid #e4d7e4}
+.pill.confirmed{background:#eef7f1;color:#226847;border-color:#cfe6d8}
+.pill.pending{background:#fff8eb;color:#91620f;border-color:#f2dfb3}
+.pill.sent{background:#ecf7f6;color:#176e67;border-color:#c7e6e3}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn{padding:10px 14px;border-radius:12px}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;overflow:hidden}th,td{padding:14px 12px;border-bottom:1px solid #efe5ef;text-align:left}th{font-size:.84rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:#fcf9fc}tbody tr:hover{background:#fcf9fc}
+.check{display:flex;align-items:flex-start;gap:10px;background:#faf7fb;border:1px solid var(--border);padding:12px 14px;border-radius:14px}.check input{width:auto;margin-top:2px}
+.helper{font-size:.87rem;color:var(--muted);margin-top:-6px}
+.footer{padding:28px 0 8px;color:var(--muted);text-align:center;font-size:.9rem}
+.hidden{display:none!important}
+@media (max-width:980px){.hero{grid-template-columns:1fr}.agendaWrap{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+@media (max-width:680px){.topbar{align-items:flex-start}.stats,.cols,.cols-3{grid-template-columns:1fr}.shell{padding-left:12px;padding-right:12px}.panel{padding:18px}.hero{padding:16px}.heroCard,.miniInfo{border-radius:20px}.stat strong{font-size:1.7rem}.tabs{gap:8px}.tab{width:100%;justify-content:center}.btn{width:100%}.sectionActions{width:100%}}
 </style>
 </head>
 <body>
-<header><div><h1>Manicura · Agenda</h1><small>Administración de clientes y citas</small></div><button id="logout" class="ghost" hidden>Cerrar sesión</button></header>
-<main>
-<div id="notice" role="status" aria-live="polite"></div>
-<section id="login" class="panel"><h2>Acceso del personal</h2><p class="muted">Ingresa tu clave administrativa de Render. Se conserva únicamente mientras esta página permanezca abierta.</p><form id="authForm"><label for="key">ADMIN_API_KEY</label><input id="key" type="password" required autocomplete="off" placeholder="Clave de acceso"><button>Entrar</button></form><p class="muted">Esta primera versión es solo para personal autorizado. No publiques ni distribuyas esta clave.</p></section>
-<div id="workspace" hidden>
-<div class="summary"><div><small>Clientes</small><strong id="countClients">—</strong></div><div><small>Citas del día</small><strong id="countToday">—</strong></div><div><small>Confirmadas</small><strong id="countConfirmed">—</strong></div></div>
-<nav class="tabs"><button class="tab active" data-tab="agenda">Agenda</button><button class="tab" data-tab="nueva">Nueva cita</button><button class="tab" data-tab="clientes">Clientes</button></nav>
-<section id="agenda" class="panel"><div class="row"><h2>Calendario diario</h2><button id="reload" class="ghost">Actualizar</button></div><label for="day">Fecha (Costa Rica)</label><input type="date" id="day"><div id="appointments" style="margin-top:18px"></div></section>
-<section id="nueva" class="panel" hidden><h2>Agendar una cita</h2><form id="appointmentForm"><label>Cliente<select id="clientSelect" required></select></label><label>Servicio<input id="service" placeholder="Ej. Manicura" required maxlength="120"></label><div class="cols"><label>Fecha<input type="date" id="apptDate" required></label><label>Hora<input type="time" id="apptTime" required></label></div><label>Duración<select id="duration"><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60" selected>60 minutos</option><option value="90">90 minutos</option><option value="120">120 minutos</option></select></label><label>Notas (opcional)<textarea id="apptNotes" rows="2" maxlength="1000"></textarea></label><button>Guardar cita</button></form></section>
-<section id="clientes" class="panel" hidden><h2>Nuevo cliente</h2><form id="clientForm"><label>Nombre<input id="clientName" required maxlength="120"></label><label>WhatsApp (formato internacional)<input id="clientPhone" type="tel" required placeholder="+50688888888" pattern="\+?[0-9]{8,15}"></label><label class="check"><input id="clientOpt" type="checkbox"> Confirmó que desea recibir recordatorios por WhatsApp</label><button>Registrar cliente</button></form><h2 style="margin-top:28px">Clientes registrados</h2><div id="clientsList" class="scroll"></div></section>
-</div></main><footer>Zona horaria de las citas: America/Costa_Rica (UTC−06:00)</footer>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">💅</div>
+      <div>
+        <h1>Manicura · Panel administrativo</h1>
+        <p>Clientes, agenda y recordatorios de WhatsApp en un solo lugar.</p>
+      </div>
+    </div>
+    <button id="logout" class="logout hidden">Cerrar sesión</button>
+  </div>
+
+  <section class="hero">
+    <div class="heroCard">
+      <h2>Gestiona tu salón con una vista más clara</h2>
+      <p>Consulta el calendario diario, registra clientes, agenda nuevas citas y controla el estado de los recordatorios de WhatsApp desde una interfaz más moderna, limpia y fácil de usar.</p>
+    </div>
+    <div class="heroInfo">
+      <div class="miniInfo"><div><strong>Zona horaria</strong><span>America/Costa_Rica (UTC−06:00)</span></div><div class="miniBadge">CR</div></div>
+      <div class="miniInfo"><div><strong>Acceso seguro</strong><span>La clave se conserva solo durante esta sesión del navegador.</span></div><div class="miniBadge">🔐</div></div>
+    </div>
+  </section>
+
+  <div id="notice" role="status" aria-live="polite"></div>
+
+  <section id="login" class="panel">
+    <h2 class="authTitle">Acceso del personal</h2>
+    <p class="authSubtitle">Ingresa tu <strong>ADMIN_API_KEY</strong> para cargar clientes, citas y estadísticas del panel.</p>
+    <form id="authForm">
+      <div>
+        <label for="key">Clave administrativa</label>
+        <input id="key" class="field" type="password" required autocomplete="off" placeholder="Pega aquí tu ADMIN_API_KEY">
+      </div>
+      <button class="btn btn-primary">Entrar al panel</button>
+    </form>
+    <p class="helper">No compartas esta clave con clientes ni la publiques en la app final.</p>
+  </section>
+
+  <div id="workspace" hidden>
+    <div class="grid">
+      <div class="stats">
+        <div class="stat">
+          <div class="statHead"><span class="statLabel">Clientes registrados</span><span class="iconBox">👤</span></div>
+          <strong id="countClients">—</strong>
+          <small>Base total de clientes</small>
+        </div>
+        <div class="stat">
+          <div class="statHead"><span class="statLabel">Citas del día</span><span class="iconBox">📅</span></div>
+          <strong id="countToday">—</strong>
+          <small>Agenda de la fecha seleccionada</small>
+        </div>
+        <div class="stat">
+          <div class="statHead"><span class="statLabel">Confirmadas</span><span class="iconBox">✅</span></div>
+          <strong id="countConfirmed">—</strong>
+          <small>Citas confirmadas en pantalla</small>
+        </div>
+      </div>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="agenda">Agenda</button>
+        <button class="tab" data-tab="nueva">Nueva cita</button>
+        <button class="tab" data-tab="clientes">Clientes</button>
+      </nav>
+
+      <section id="agenda" class="section panel">
+        <div class="sectionTitle">
+          <div>
+            <h2>Calendario diario</h2>
+            <p>Consulta las citas registradas para una fecha específica.</p>
+          </div>
+          <div class="sectionActions">
+            <button id="reload" class="btn btn-soft">Actualizar agenda</button>
+          </div>
+        </div>
+        <div class="agendaWrap">
+          <div class="card dateCard">
+            <label for="day">Fecha (Costa Rica)</label>
+            <input type="date" id="day" class="field">
+            <div class="dateHint">Selecciona un día para ver las citas registradas, su estado y el estado del recordatorio de WhatsApp.</div>
+          </div>
+          <div>
+            <div id="appointments" class="appointments"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="nueva" class="section panel" hidden>
+        <div class="sectionTitle">
+          <div>
+            <h2>Agendar una cita</h2>
+            <p>Crea una cita nueva y asígnala a un cliente registrado.</p>
+          </div>
+        </div>
+        <form id="appointmentForm">
+          <div class="cols">
+            <div>
+              <label for="clientSelect">Cliente</label>
+              <select id="clientSelect" class="select" required></select>
+            </div>
+            <div>
+              <label for="service">Servicio</label>
+              <input id="service" class="field" placeholder="Ej. Manicura clásica" required maxlength="120">
+            </div>
+          </div>
+          <div class="cols-3">
+            <div>
+              <label for="apptDate">Fecha</label>
+              <input type="date" id="apptDate" class="field" required>
+            </div>
+            <div>
+              <label for="apptTime">Hora</label>
+              <input type="time" id="apptTime" class="field" required>
+            </div>
+            <div>
+              <label for="duration">Duración</label>
+              <select id="duration" class="select">
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60" selected>60 minutos</option>
+                <option value="90">90 minutos</option>
+                <option value="120">120 minutos</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="apptNotes">Notas</label>
+            <textarea id="apptNotes" rows="3" class="field" maxlength="1000" placeholder="Observaciones opcionales de la cita"></textarea>
+          </div>
+          <div class="sectionActions">
+            <button class="btn btn-primary">Guardar cita</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="clientes" class="section panel" hidden>
+        <div class="sectionTitle">
+          <div>
+            <h2>Clientes</h2>
+            <p>Registra nuevos clientes y consulta los ya creados.</p>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(12,1fr)">
+          <div class="panel" style="grid-column:span 5; margin:0; padding:18px; box-shadow:none; background:var(--surface-2)">
+            <h3 style="margin-top:0">Nuevo cliente</h3>
+            <form id="clientForm">
+              <div>
+                <label for="clientName">Nombre</label>
+                <input id="clientName" class="field" required maxlength="120" placeholder="Nombre completo">
+              </div>
+              <div>
+                <label for="clientPhone">WhatsApp</label>
+                <input id="clientPhone" class="field" type="tel" required placeholder="+50688888888" pattern="\+?[0-9]{8,15}">
+              </div>
+              <label class="check"><input id="clientOpt" type="checkbox"> <span>El cliente autorizó recibir recordatorios por WhatsApp.</span></label>
+              <button class="btn btn-primary">Registrar cliente</button>
+            </form>
+          </div>
+          <div class="panel" style="grid-column:span 7; margin:0; padding:18px; box-shadow:none; background:var(--surface-2)">
+            <h3 style="margin-top:0">Clientes registrados</h3>
+            <div id="clientsList" class="scroll"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="footer">Panel administrativo de manicura · Conectado a tu servidor HTTPS en Render</div>
+</div>
 <script src="/app.js" defer></script>
 </body>
 </html>
