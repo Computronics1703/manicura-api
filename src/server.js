@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
 import {timingSafeEqual} from 'node:crypto';
+import {authRouter, requireAuth} from './auth.js';
 import {pool} from './db.js';
 import {initSchema} from './schema.js';
 
@@ -11,6 +12,7 @@ app.disable('x-powered-by');
 app.use(helmet());
 app.use(express.json({limit:'30kb'}));
 app.use(express.static('public'));
+app.use('/api/auth',authRouter);
 const origin=process.env.CORS_ORIGIN;
 app.use((req,res,next)=>{
  if(origin && origin !== '*' && req.headers.origin===origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','Content-Type,X-API-Key');res.setHeader('Access-Control-Allow-Methods','GET,POST,PATCH,DELETE,OPTIONS');}
@@ -22,12 +24,7 @@ const integer = v => /^\d+$/.test(String(v)) && Number.isSafeInteger(Number(v)) 
 const isoDate = v => typeof v==='string' && /(?:Z|[+-]\d\d:\d\d)$/.test(v) && !Number.isNaN(Date.parse(v)) ? new Date(v):null;
 const error=(res,code,message)=>res.status(code).json({error:message});
 app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,service:'manicura-api'});}catch{error(res,503,'Base de datos no disponible');}});
-app.use('/api',(req,res,next)=>{
- const expected=Buffer.from(process.env.ADMIN_API_KEY);
- const actual=Buffer.from(String(req.get('X-API-Key')||''));
- if(expected.length!==actual.length || !timingSafeEqual(expected,actual)) return error(res,401,'No autorizado');
- next();
-});
+app.use('/api',requireAuth);
 app.get('/api/clients',async(req,res,next)=>{try{const {rows}=await pool.query('SELECT * FROM clients ORDER BY id DESC LIMIT 500');res.json(rows);}catch(e){next(e);}});
 app.post('/api/clients',async(req,res,next)=>{try{
  const name=text(req.body?.name,120),phone=text(req.body?.phone,30);
