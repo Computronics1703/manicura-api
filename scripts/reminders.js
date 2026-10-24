@@ -14,7 +14,7 @@ try{
  if(!process.env.WA_ACCESS_TOKEN||!process.env.WA_PHONE_NUMBER_ID){console.log('WhatsApp no configurado: se omite el envío');process.exitCode=0;}
  else {
   // Solo citas dentro de las próximas 24 h; el cron se ejecuta cada 15 minutos.
-  const {rows}=await pool.query(`UPDATE appointments a SET reminder_status='processing' FROM clients c WHERE a.client_id=c.id AND a.status='confirmed' AND a.reminder_status IN ('pending','failed') AND a.starts_at BETWEEN NOW()+INTERVAL '23 hours 45 minutes' AND NOW()+INTERVAL '24 hours' AND c.whatsapp_opt_in=TRUE RETURNING a.id,a.service,a.starts_at,c.phone`);
+  const {rows}=await pool.query(`UPDATE appointments a SET reminder_status='processing' FROM clients c WHERE a.client_id=c.id AND a.status='confirmed' AND a.reminder_status IN ('pending','failed') AND a.starts_at BETWEEN NOW()+INTERVAL '22 hours' AND NOW()+INTERVAL '24 hours' AND c.whatsapp_opt_in=TRUE RETURNING a.id,a.service,a.starts_at,c.phone`);
   for(const row of rows){try{await send(row.phone,row.service,row.starts_at);await pool.query(`UPDATE appointments SET reminder_status='sent',reminder_sent_at=NOW(),reminder_error=NULL WHERE id=$1`,[row.id]);console.log('Enviado',row.id);}catch(e){await pool.query(`UPDATE appointments SET reminder_status='failed',reminder_error=$2 WHERE id=$1`,[row.id,String(e.message).slice(0,300)]);console.error(row.id,e.message);}}
  }
 }finally{await pool.end();}
