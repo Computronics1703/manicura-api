@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
-import {timingSafeEqual} from 'node:crypto';
 import {authRouter, requireAuth} from './auth.js';
 import {pool} from './db.js';
 import {initSchema} from './schema.js';
 
-if (!process.env.ADMIN_API_KEY || process.env.ADMIN_API_KEY.length < 24) throw new Error('Configura ADMIN_API_KEY con al menos 24 caracteres');
 const app=express();
 app.disable('x-powered-by');
 app.use(helmet());
