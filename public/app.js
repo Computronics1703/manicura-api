@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-let clients=[], appointments=[];
+let clients=[], appointments=[], currentUser=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const notice=(message,type='ok')=>{
@@ -50,7 +50,7 @@ async function loadAppointments(){
 async function reload(){ await Promise.all([loadClients(), loadAppointments()]); }
 function show(tab){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  for(const t of ['agenda','nueva','clientes']) $(t).hidden=t!==tab;
+  for(const t of ['agenda','nueva','clientes','usuarios']) $(t).hidden=t!==tab;
 }
 $('authForm').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -59,7 +59,9 @@ $('authForm').addEventListener('submit',async e=>{
   btn.disabled=true; btn.textContent='Ingresando...';
   notice('Comprobando acceso…','info');
   try{
-    await req('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('username').value.trim(),password:$('password').value})});
+    const result=await req('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('username').value.trim(),password:$('password').value})});
+    currentUser=result.user;
+    $('usersTab').classList.toggle('hidden',currentUser.role!=='admin');
     await reload();
     $('login').hidden=true;
     $('workspace').hidden=false;
@@ -73,11 +75,11 @@ $('authForm').addEventListener('submit',async e=>{
   }
 });
 $('logout').onclick=async()=>{
-  await req('/api/auth/logout',{method:'POST'}).catch(()=>{}); clients=[]; appointments=[];
+  await req('/api/auth/logout',{method:'POST'}).catch(()=>{}); clients=[]; appointments=[]; currentUser=null; $('usersTab').classList.add('hidden');show('agenda');
   $('login').hidden=false; $('workspace').hidden=true; $('logout').classList.add('hidden');
   notice('Sesión cerrada.','info');
 };
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{show(b.dataset.tab);if(b.dataset.tab==='usuarios'){try{await loadUsers()}catch(e){notice(e.message,'err')}}});
 $('reload').onclick=()=>loadAppointments().then(()=>notice('Agenda actualizada.','ok')).catch(e=>notice(e.message,'err'));
 $('day').onchange=()=>loadAppointments().catch(e=>notice(e.message,'err'));
 $('clientForm').addEventListener('submit',async e=>{
@@ -125,6 +127,29 @@ $('appointments').addEventListener('click',async e=>{
   }catch(err){
     notice(err.message,'err');
   }
+});
+
+async function loadUsers(){
+  const users=await req('/api/auth/users');
+  $('usersList').innerHTML='<table><thead><tr><th>Cuenta</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+
+    users.map(u=>`<tr><td>${esc(u.username)}</td><td>${u.role==='admin'?'Administrador':'Personal'}</td><td>${u.active?'Activo':'Inactivo'}</td><td><div class="actions"><button class="btn btn-soft" data-pwd="${Number(u.id)}">Clave</button>${currentUser&&Number(currentUser.id)===Number(u.id)?'':`<button class="btn btn-soft" data-toggle="${Number(u.id)}" data-active="${u.active?'1':'0'}">${u.active?'Desactivar':'Activar'}</button><button class="btn btn-soft" data-role="${Number(u.id)}" data-currentrole="${esc(u.role)}">${u.role==='admin'?'Hacer personal':'Hacer admin'}</button>`}</div></td></tr>`).join('')+'</tbody></table>';
+}
+$('userForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const button=$('userForm').querySelector('button');button.disabled=true;
+ try{await req('/api/auth/users',{method:'POST',body:JSON.stringify({username:$('newUsername').value.trim().toLowerCase(),password:$('newPassword').value,role:$('newRole').value})});$('userForm').reset();await loadUsers();notice('Usuario creado correctamente.','ok');}
+ catch(err){notice(err.message,'err');}finally{button.disabled=false;}
+});
+$('usersList').addEventListener('click',async e=>{
+ const btn=e.target.closest('button[data-pwd],button[data-toggle],button[data-role]');if(!btn)return;
+ const id=btn.dataset.pwd||btn.dataset.toggle||btn.dataset.role;
+ let changes;
+ if(btn.dataset.pwd){const password=prompt('Escribe nueva contraseña de al menos 12 caracteres. Evita realizar esta operación en lugares públicos.');if(password===null)return;if(password.length<12||password.length>128){notice('La contraseña debe contener entre 12 y 128 caracteres.','err');return;}changes={password};}
+ else if(btn.dataset.toggle){const active=btn.dataset.active!=='1';if(!confirm(active?'¿Activar esta cuenta?':'¿Desactivar esta cuenta y cerrar sus sesiones?'))return;changes={active};}
+ else {const role=btn.dataset.currentrole==='admin'?'staff':'admin';if(!confirm(`¿Cambiar la cuenta a ${role}?`))return;changes={role};}
+ btn.disabled=true;
+ try{await req(`/api/auth/users/${Number(id)}`,{method:'PATCH',body:JSON.stringify(changes)});await loadUsers();notice('Usuario actualizado.','ok');}
+ catch(err){notice(err.message,'err');}finally{btn.disabled=false;}
 });
 $('day').value=crDate();
 $('apptDate').value=crDate();

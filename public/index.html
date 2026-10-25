@@ -179,6 +179,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;ove
         <button class="tab active" data-tab="agenda">Agenda</button>
         <button class="tab" data-tab="nueva">Nueva cita</button>
         <button class="tab" data-tab="clientes">Clientes</button>
+        <button class="tab hidden" data-tab="usuarios" id="usersTab">Usuarios</button>
       </nav>
 
       <section id="agenda" class="section panel">
@@ -280,13 +281,26 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:18px;ove
           </div>
         </div>
       </section>
+      <section id="usuarios" class="section panel" hidden>
+        <div class="sectionTitle"><div><h2>Usuarios y permisos</h2><p>Solo administradores pueden crear y administrar cuentas.</p></div></div>
+        <div class="cols" style="align-items:start">
+          <div class="card"><h3>Crear usuario</h3>
+            <form id="userForm">
+              <div><label for="newUsername">Nombre de usuario</label><input class="field" id="newUsername" required minlength="3" maxlength="40" pattern="[a-zA-Z0-9._-]{3,40}" autocomplete="off"></div>
+              <div><label for="newPassword">Contraseña (mínimo 12 caracteres)</label><input class="field" id="newPassword" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></div>
+              <div><label for="newRole">Permisos</label><select id="newRole" class="select"><option value="staff">Personal: clientes y citas</option><option value="admin">Administrador: acceso completo</option></select></div>
+              <button class="btn btn-primary">Crear usuario</button>
+            </form>
+          </div>
+          <div class="card"><h3>Cuentas registradas</h3><div id="usersList" class="scroll"></div></div>
+        </div>
+      </section>
     </div>
   </div>
 
   <div class="footer">Panel administrativo de manicura · Conectado a tu servidor HTTPS en Render</div>
 </div>
 <script src="/app.js" defer></script>
-<script src="/pwa.js" defer></script>
 <script src="/pwa.js" defer></script>
 </body>
 </html>
