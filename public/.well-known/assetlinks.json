@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.manicura_api.twa",
+        "sha256_cert_fingerprints": ["E0:A9:B2:65:62:C8:DC:D5:10:D0:86:C2:07:6D:22:4C:AF:3C:47:B8:53:52:09:AE:79:03:09:EA:16:5A:16:F0"]
+      }
+    }]
