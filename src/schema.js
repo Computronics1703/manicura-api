@@ -92,12 +92,4 @@ export async function initSchema() {
 
 
 
-Cómo reemplazarlo
-1. En GitHub, abre src/schema.js.
-2. Selecciona todo el código con Ctrl + A.
-3. Elimínalo y pega el código completo anterior.
-4. Presiona Commit changes.
-5. Espera a que Render termine el despliegue.
-Este archivo solamente prepara la base de datos. Todavía no activa los nuevos envíos.
 
-Cuando hayas guardado los cambios, dime «Listo» y continuaremos con server.js y reminders.js para implementar el aviso inmediato y el recordatorio 4 horas antes.
