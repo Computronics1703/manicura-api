@@ -97,7 +97,52 @@ app.post('/api/appointments',async(req,res,next)=>{let client;try{
  const conflicts=await client.query(`SELECT id FROM appointments WHERE status='confirmed' AND starts_at < $2 AND ends_at > $1 LIMIT 1`,[start,end]);
  if(conflicts.rowCount){await client.query('ROLLBACK');return error(res,409,'Horario ocupado');}
  const {rows}=await client.query(`INSERT INTO appointments(client_id,service,starts_at,ends_at,notes) VALUES($1,$2,$3,$4,$5) RETURNING *`,[clientId,service,start,end,typeof req.body.notes==='string'?req.body.notes.slice(0,1000):'']);
- await client.query('COMMIT');res.status(201).json(rows[0]);
+ async function enviarConfirmacion(phone, service, when) {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const template = process.env.WA_CONFIRMATION_TEMPLATE_NAME || 'confirmacion_cita';
+
+  if (!token || !phoneId) {
+    throw new Error('WhatsApp no configurado');
+  }
+
+  const fecha = new Intl.DateTimeFormat('es-CR', {
+    timeZone: 'America/Costa_Rica',
+    dateStyle: 'full',
+    timeStyle: 'short'
+  }).format(new Date(when));
+
+  const response = await fetch(
+    `https://graph.facebook.com/v23.0/${phoneId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phone.replace(/\D/g, ''),
+        type: 'template',
+        template: {
+          name: template,
+          language: {code: 'es_CR'},
+          components: [{
+            type: 'body',
+            parameters: [
+              {type: 'text', text: service},
+              {type: 'text', text: fecha}
+            ]
+          }]
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`WhatsApp HTTP ${response.status}: ${await response.text()}`);
+  }
+}
  }catch(e){if(client)await client.query('ROLLBACK').catch(()=>{});next(e);}finally{client?.release();}});
 app.patch('/api/appointments/:id/status',async(req,res,next)=>{try{
  const id=integer(req.params.id),status=req.body?.status;
