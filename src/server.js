@@ -4,7 +4,52 @@ import helmet from 'helmet';
 import {authRouter, requireAuth} from './auth.js';
 import {pool} from './db.js';
 import {initSchema} from './schema.js';
+async function enviarConfirmacion(phone, service, when) {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const template = process.env.WA_CONFIRMATION_TEMPLATE_NAME || 'confirmacion_cita';
 
+  if (!token || !phoneId) {
+    throw new Error('WhatsApp no configurado');
+  }
+
+  const fecha = new Intl.DateTimeFormat('es-CR', {
+    timeZone: 'America/Costa_Rica',
+    dateStyle: 'full',
+    timeStyle: 'short'
+  }).format(new Date(when));
+
+  const response = await fetch(
+    `https://graph.facebook.com/v23.0/${phoneId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phone.replace(/\D/g, ''),
+        type: 'template',
+        template: {
+          name: template,
+          language: {code: 'es_CR'},
+          components: [{
+            type: 'body',
+            parameters: [
+              {type: 'text', text: service},
+              {type: 'text', text: fecha}
+            ]
+          }]
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`WhatsApp HTTP ${response.status}: ${await response.text()}`);
+  }
+}
 const app=express();
 app.disable('x-powered-by');
 app.use(helmet());
